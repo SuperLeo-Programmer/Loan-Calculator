@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      color: #343a40;
+      font-family: 'Arial', sans-serif;
+    }
+    .navbar {
+      background-color: #343a40;
+      color: white;
+    }
+    .navbar-brand, .nav-link {
+      color: white !important;
+    }
+    .container {
+      margin-top: 20px;
+    }
+    .card {
+      border: none;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .modal-content {
+      background-color: #f8f9fa;
+    }
+    .chart-container {
+      width: 100%;
+      height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Loan Tracker</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#add-loan">Add Loan</a></li>
+          <li class="nav-item"><a class="nav-link" href="#track-loans">Track Loans</a></li>
+          <li class="nav-item"><a class="nav-link" href="#charts">Analytics</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container">
+    <h1 class="text-center my-4">Welcome to Loan Tracker</h1>
+
+    <!-- Add Loan -->
+    <section id="add-loan" class="mb-5">
+      <div class="card p-4">
+        <h3>Add a New Loan</h3>
+        <form id="loanForm">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="loanType" class="form-label">Loan Type</label>
+              <input type="text" id="loanType" class="form-control" placeholder="e.g., Home Loan">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="loanAmount" class="form-label">Loan Amount (€)</label>
+              <input type="number" id="loanAmount" class="form-control" placeholder="e.g., 10000">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="interestRate" class="form-label">Interest Rate (%)</label>
+              <input type="number" id="interestRate" class="form-control" placeholder="e.g., 5">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="loanDuration" class="form-label">Duration (Years)</label>
+              <input type="number" id="loanDuration" class="form-control" placeholder="e.g., 5">
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" id="addLoanBtn">Add Loan</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Track Loans -->
+    <section id="track-loans" class="mb-5">
+      <div class="card p-4">
+        <h3>Track Loans</h3>
+        <ul id="loanList" class="list-group">
+          <!-- Dynamic Loans Will Appear Here -->
+        </ul>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section id="charts" class="mb-5">
+      <div class="card p-4">
+        <h3>Analytics</h3>
+        <div class="chart-container">
+          <canvas id="loanChart"></canvas>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    const loans = [];
+
+    // Add Loan
+    document.getElementById('addLoanBtn').addEventListener('click', () => {
+      const type = document.getElementById('loanType').value;
+      const amount = parseFloat(document.getElementById('loanAmount').value);
+      const interest = parseFloat(document.getElementById('interestRate').value);
+      const duration = parseInt(document.getElementById('loanDuration').value);
+
+      if (!type || isNaN(amount) || isNaN(interest) || isNaN(duration)) {
+        Swal.fire('Error', 'Please fill all fields correctly.', 'error');
+        return;
+      }
+
+      const loan = { type, amount, interest, duration };
+      loans.push(loan);
+      updateLoanList();
+      updateLoanChart();
+
+      Swal.fire('Success', 'Loan added successfully!', 'success');
+    });
+
+    // Update Loan List
+    function updateLoanList() {
+      const loanList = document.getElementById('loanList');
+      loanList.innerHTML = '';
+      loans.forEach((loan, index) => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.innerHTML = `
+          <strong>${loan.type}</strong>: €${loan.amount} at ${loan.interest}% for ${loan.duration} years
+          <button class="btn btn-danger btn-sm float-end" onclick="removeLoan(${index})">Remove</button>
+        `;
+        loanList.appendChild(li);
+      });
+    }
+
+    // Remove Loan
+    function removeLoan(index) {
+      loans.splice(index, 1);
+      updateLoanList();
+      updateLoanChart();
+    }
+
+    // Update Loan Chart
+    function updateLoanChart() {
+      const ctx = document.getElementById('loanChart').getContext('2d');
+      const labels = loans.map(loan => loan.type);
+      const data = loans.map(loan => loan.amount);
+
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Loan Distribution',
+            data,
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+          }]
+        }
+      });
+    }
+  </script>
+</body>
+</html>
